@@ -24,7 +24,7 @@ namespace MCBot.Core.Commands
         {
 
             string JSON = "";
-            string SettingsLocation = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.2\MCBot.dll", @"Data\Settings.json");
+            string SettingsLocation = Assembly.GetEntryAssembly().Location.Replace(@"MCBot.dll", @"Data\Settings.json");
 
             using (var Stream = new FileStream(SettingsLocation, FileMode.Open, FileAccess.Read))
             using (var ReadSettings = new StreamReader(Stream))
@@ -35,12 +35,11 @@ namespace MCBot.Core.Commands
             Settings Settings = JsonConvert.DeserializeObject<Settings>(JSON);
             ESettings.DefaultServer = Settings.defaultServer;
 
-            Ip = Settings.defaultServer;
+            
 
             if (Ip == "")
             {
-                await Context.Channel.SendMessageAsync(":x: You must pass a server IP! Syntax: !serverstatus **<IP:PORT>**");
-                return;
+                Ip = Settings.defaultServer;
             }
             APIHelper.InitializeClient();
             MCServerData.BaseMCData MCData = new MCServerData.BaseMCData();
@@ -57,9 +56,13 @@ namespace MCBot.Core.Commands
             {
                 ServerOnline = ":white_check_mark:";
                 string Output = $"Server online? { ServerOnline}\n\nPlayers: { MCData.players.online.ToString()}/{ MCData.players.max.ToString()}";
-                foreach(string x in MCData.players.list)
+                if (MCData.players.online > 0)
                 {
-                    Output += $"\n- {x}";
+                    Console.WriteLine("Test");
+                    foreach (string x in MCData.players.list)
+                    {
+                        Output += $"\n- {x}";
+                    }
                 }
                 EmbedServer.WithDescription(Output);
                 await Context.Channel.SendMessageAsync("", false, EmbedServer.Build());
